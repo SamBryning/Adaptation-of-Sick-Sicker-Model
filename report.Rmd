@@ -1,0 +1,78 @@
+---
+title: "Application of discrepancy terms to the SickSicker Model"
+output:
+  bookdown::pdf_document2:
+    number_sections: no
+    toc: false
+citation_package: biblatex
+biblio-style: authoryear
+bibliography: "C:/Users/mydirectory/References.bib"
+params:
+  n: Null
+  t: Null 
+---
+
+## Background
+
+<br> This analysis intends to replicate the research undertaken by @Bryning2022 in an open-source model. The SickSicker Model developed by @Smith2020 has been adapted to illustrate how discrepancy terms can be used to inform the potential value of building a more complex model structure (characterised by a larger number of health states).
+
+The Sicker (S2) health state in the original model structure has been removed to represent a simple model with 3 health states (Figure \@ref(fig:model-diagrams)) where patients in the Sick (S1) health state are assumed to transition back to the Healthy state after one model cycle. The original 4 health state model represents a more complex model with disease progression assumed to have permanent effects on patients' mortality and quality of life. Patients are also at risk of transitioning to the Sicker health state.
+
+We focus on a situation where an analyst or decision maker is using the Simple Model to evaluate the cost effectiveness of a health intervention but is uncertain as to whether the structural uncertainty has a meaningful impact on model results. Discrepancy terms have been specified and located within input parameters of the 'Simple Model' to evaluate whether the additional complexity of the Sick Sicker Model is likely to change the reimbursement decision. In practice, the application of discrepancy terms will be most valuable where the cost associated with developing the more complex model is substantial but this simple example is used for illustrative purposes.
+
+```{r model-diagrams, echo=FALSE, fig.cap="Sick Model (left) and Sick Sicker Model (right) adapted from @Smith2020", out.width = '49%', out.height="20%", fig.align='center', fig.show='hold'}
+knitr::include_graphics(c("C:/Users/mydirectory/Sick Diagram.png","C:/Users/mydirectory/Sick Sicker Diagram.PNG"))
+```
+
+## Application of discrepancy terms
+
+In the Sick Model, patients who become sick transition back to the Healthy state after one model cycle. If sickness can become permanent and more severe, the utility value accrued in the Healthy state does not reflect the true patient health-related quality of life (HRQoL) and there is some error due to model structure in this parameter (Equation \@ref(eq:utility)):
+
+\begin{equation}
+U^{Sick Sicker Model}_{Healthy} = U^{Sick Model}_{Healthy} + delta^{U}
+(\#eq:utility)
+\end{equation}
+
+The Healthy state utility value is the same for all patients therefore only one discrepancy term is specified and applied to all patients regardless of treatment status. If treatment impacts the probability of becoming sick or recovering, an additional discrepancy term could be specified but is not considered necessary in this example. Similarly, there is also structural error in the Healthy state cost so a discrepancy term is also located within this parameter (Equation \@ref(eq:cost)):
+
+\begin{equation}
+C^{Sick Sicker Model}_{Healthy} = C^{Sick Model}_{Healthy} + delta^{C}
+(\#eq:cost)
+\end{equation}
+
+The health intervention is assumed to only improve the HRQoL for patients who are sick; the utility value and cost for patients receiving treatment (while in the Sick health state) are applied in each model cycle [@Enns2015]. By assuming sickness is always temporary, the treatment cost and benefit (utility value) applied in the Sick health state are likely to be underestimates of the true values therefore discrepancy terms are also located within these parameters (Equation \@ref(eq:tx-utility) and \@ref(eq:tx-cost)):
+
+\begin{equation}
+U^{Sick Sicker Model}_{Sick, tx} = U^{Sick Model}_{Sick, tx} + delta^{U}_{tx}
+(\#eq:tx-utility)
+\end{equation}
+
+\begin{equation}
+C^{Sick Sicker Model}_{Sick, tx} = C^{Sick Model}_{Sick, tx} + delta^{C}_{tx}
+(\#eq:tx-cost)
+\end{equation}
+
+Four discrepancy terms are therefore specified within the Sick model.
+
+## Specification of discrepancy terms
+
+#### Non-informative discrepancy terms
+\
+The specification of non-informative discrepancy terms closely follows the original approach by @Strong2012 where discrepancy terms with a zero mean were specified. Both the mean and variance of each discrepancy term were expressed as a proportion of the expected (mean) input value. Discrepancy terms were assumed to be normally distributed to allow for an easier specification of correlation.
+
+Along with other model input parameters, the discrepancy terms are included within the probabilistic sensitivity analysis (PSA). The expected value of partial perfection information (EVPPI) is estimated via generalized additive models (GAM) [@Strong2015]. For each treatment option, the net monetary benefit (NMB) output value from each PSA iteration is regressed on the corresponding sampled discrepancy term values. Model diagnostic plots can be used to assess the suitability of model specification.
+
+EVPPI represents the maximum possible value of eliminating all uncertainty in the discrepancy terms and when expressed as a proportion of the overall expected value of perfect information (EVPI) for the model, can indicate their importance relative to other model input parameters. If EVPPI index values are large, this indicates that there is significant value in reducing the uncertainty in the discrepancy terms and it may be worthwhile building the Sick Sicker model (depending on the costs of doing so).
+
+In the Shiny app, the user can assess the sensitivity of EVPPI estimates to different assumed pairwise correlation and standard deviation values.
+
+#### Informative discrepancy terms
+\
+The discrepancy terms can be respecified to reflect judgements about the likely direction and magnitude of error within the relevant input parameters resulting from model structure. In this example, the Sick Model does not include the patient outcomes associated with more severe sickness so costs are likely underestimated and patient QALYs overestimated. Therefore we can impose a condition that the structural error in the Healthy state cost parameter is positive and the Healthy state utility value parameter is negative.
+
+Similarly, we can deduce that the treatment cost (duration) will be underestimated as patients may remain Sick for more than one model cycle. The impact on the treatment benefit (the improvement in patient HRQoL while sick) over the model time horizon is uncertain as it depends on how long patients remain sick and how many become more sick. If patients remain Sick for a long period of time, patients will continue to benefit from treatment through higher HRQoL. However, if patients become more sick they no longer derive any treatment benefit. The structural error in the treatment cost is positive but no restriction is made for the structural error in the utility value for patients receiving treatment in the Sick state.
+
+In practice, the mean and variance parameters of the discrepancy terms would be informed by the literature, as done in @Bryning2022, but as this is a hypothetical example they are calibrated to approximate the results of the Sick Sicker Model. In the Shiny app, the user can assess the sensitivity of model results to different discrepancy term specifications.
+\newpage {}
+
+## References
