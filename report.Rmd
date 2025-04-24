@@ -11,6 +11,7 @@ params:
   n: Null
   t: Null 
 ---
+(ref:Enns) @Enns2015.
 
 ## Background
 
@@ -20,7 +21,7 @@ The Sicker (S2) health state in the original model structure has been removed to
 
 We focus on a situation where an analyst or decision maker is using the Simple Model to evaluate the cost effectiveness of a health intervention but is uncertain as to whether the structural uncertainty has a meaningful impact on model results. Discrepancy terms have been specified and located within input parameters of the 'Simple Model' to evaluate whether the additional complexity of the Sick Sicker Model is likely to change the reimbursement decision. In practice, the application of discrepancy terms will be most valuable where the cost associated with developing the more complex model is substantial but this simple example is used for illustrative purposes.
 
-```{r model-diagrams, echo=FALSE, fig.cap="Sick Model (left) and Sick Sicker Model (right) adapted from @Smith2020", out.width = '49%', out.height="20%", fig.align='center', fig.show='hold'}
+```{r model-diagrams, echo=FALSE, fig.cap="Sick Model (left) and Sick Sicker Model (right) adapted from (ref:Enns)", out.width = '49%', out.height="20%", fig.align='center', fig.show='hold'}
 knitr::include_graphics(c("C:/Users/mydirectory/Sick Diagram.png","C:/Users/mydirectory/Sick Sicker Diagram.PNG"))
 ```
 
