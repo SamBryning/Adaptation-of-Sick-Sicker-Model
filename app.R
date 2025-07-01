@@ -19,14 +19,17 @@ library(shinycssloaders)
 library(DT)
 library(priceR)
 library(scales)
-library(mgcv); library(visibly)
+library(mgcv)
+library(mgcViz)
 library(voi)
 library(gt)
 library(ggplot2)
 library(fontawesome)
+library(rsconnect)
+
 
 # source the wrapper function from directory
-source("C:/Users/mydirectory/wrapper.R")   
+source("~/Adaptation-of-Sick-Sicker-Model/wrapper.R") 
 
 # Define informative discrepancy formulas
 ID_formula <- list("\\(\\delta^{U}_{Healthy}\\)","\\(\\delta^{C}_{Healthy}\\)", "\\(\\delta^{U}_{Sick, Treatment}\\)", "\\(\\delta^{C}_{Sick, Treatment}\\)")
@@ -73,12 +76,12 @@ ui <- fluidPage(    # create user interface using fluidpage function
                   minimumValue = 0, 
                   maximumValue = 100000,
                   decimalPlaces = 0,
-                  currencySymbol = "B#",
+                  currencySymbol = "£",
                   currencySymbolPlacement = "p",
                   digitGroupSeparator = ","),
                   bsPopover(id = "WTP",
                             title = "",
-                            content = paste0("Maximum value of B#100,000"),
+                            content = paste0("Maximum value of £100,000"),
                             placement = "right",
                             trigger = "hover", 
                             options = list(container = "body")),
@@ -242,7 +245,7 @@ server <- function(input, output, session){   # server = function with two input
                          )
                        # format dataframe to add currency and rounding
                        df_res_table[,c(2,4)] <- round(df_res_table[,c(2,4)],digits = 3)
-                       df_res_table[,c(3,5,6,7)] <- format_currency(df_res_table[,c(3,5,6,7)], "B#", 0)
+                       df_res_table[,c(3,5,6,7)] <- format_currency(df_res_table[,c(3,5,6,7)], "£", 0)
                        df_res_table[,8] <- percent(df_res_table[,8])
                        # Remove dots from column headers
                        names(df_res_table) <- gsub("\\.", " ", names(df_res_table))
@@ -251,19 +254,18 @@ server <- function(input, output, session){   # server = function with two input
                  }) # table plot end.
 
                  # Estimate EVPPI for non-informative discrepancy terms using PSA output and GAMs
-                # toggle("evppi_table")
 
-                 gam_trt <- gam(df_model_res$NMB_Trt ~ te(df_model_res$NID_utility_trt, df_model_res$NID_cost_trt) + te(df_model_res$NID_utility, df_model_res$NID_cost))
+                 gam_trt <- gam(NMB_Trt ~ te(NID_utility_trt, NID_cost_trt) + te(NID_utility, NID_cost), data = df_model_res)
 
-                 gam_notrt <- gam(df_model_res$NMB_NoTrt ~ te(df_model_res$NID_utility_trt, df_model_res$NID_cost_trt) +  te(df_model_res$NID_utility, df_model_res$NID_cost))
+                 gam_notrt <- gam(NMB_NoTrt ~ te(NID_utility_trt, NID_cost_trt) +  te(NID_utility, NID_cost), data = df_model_res)
 
                  # # Diagnostic test to check if specification of number of knots (k) is appropriate
                 output$gam_check_trt <- renderPlot({
-                  plot_gam_check(gam_trt)
+                  check.gamViz(getViz(gam_trt))
                 })
                  
                 output$gam_check_notrt <- renderPlot({
-                  plot_gam_check(gam_notrt)
+                 check.gamViz(getViz(gam_notrt))
                 }) 
 
                  # # Calculate residuals
@@ -286,11 +288,10 @@ server <- function(input, output, session){   # server = function with two input
                      "Overall EVPI" = evpi,
                      "EVPPI Index" = evppi_index)
                    
-                  # attr(df_res_evppi, "footerhtml") = "Warning: EVPI Index exceeds 100%, check model specification and a sufficient number of PSA iterations."
                  # Remove dots from column headers
                    names(df_res_evppi) <- gsub("\\.", " ", names(df_res_evppi))
                  # Format data table to add relevant symbols and rounding
-                   df_res_evppi[,c(1,2)] <- format_currency(df_res_evppi[,c(1,2)], "B#", 0)
+                   df_res_evppi[,c(1,2)] <- format_currency(df_res_evppi[,c(1,2)], "£", 0)
                    df_res_evppi[,3] <- percent(df_res_evppi[,3])
                    # Print data frame
                    df_res_evppi}
@@ -322,7 +323,7 @@ server <- function(input, output, session){   # server = function with two input
                  output$CE_plane <- renderPlot({
                    ggplot(df_model_res, aes(x=inc_Q, y=inc_C)) + geom_point() + labs(x = "Incremental QALYs", y = "Incremental costs") +
                      scale_x_continuous(expand = expansion(mult = c(0, 0))) +
-                                          scale_y_continuous(expand = expansion(mult = c(0, 0)), labels = label_currency(prefix = "B#", big.mark = ",")) +
+                                          scale_y_continuous(expand = expansion(mult = c(0, 0)), labels = label_currency(prefix = "£", big.mark = ",")) +
                                           coord_cartesian(xlim = c(0, 1), ylim = c(0,24000)) +
                                           geom_abline(intercept = 0, slope = input$WTP, colour = "darkred") + theme_classic() +
                                           theme(axis.title = element_text(size = 16), axis.text.x = element_text(size = 14), axis.text.y = element_text(size = 14, vjust = 0.25))
@@ -358,3 +359,4 @@ server <- function(input, output, session){   # server = function with two input
 ## ----- run app------
 
 shinyApp(ui, server)
+
