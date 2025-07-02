@@ -29,7 +29,7 @@ library(rsconnect)
 
 
 # source the wrapper function from directory
-source("~/Adaptation-of-Sick-Sicker-Model/wrapper.R") 
+source("wrapper.R")
 
 # Define informative discrepancy formulas
 ID_formula <- list("\\(\\delta^{U}_{Healthy}\\)","\\(\\delta^{C}_{Healthy}\\)", "\\(\\delta^{U}_{Sick, Treatment}\\)", "\\(\\delta^{C}_{Sick, Treatment}\\)")
